@@ -10,19 +10,43 @@ from sqlalchemy import create_engine
 
 # 2. Define basic functions:
 
-def load_data(messages_filepath, categories_filepath):
-    '''This function loads the datasets with the messages and categories
+def load_data(messages_path,categories_path):
+    '''This function loads and merge the data
     Inputs:
-        messages_filepath: str with the file path of the CSV file containing the 
-        messages data
-        categories_filepath: str with the file ppath of the CSV file containing
-        the categories data 
+        messages_path, categories_path: both are string that give the path
+        to the CSV files that contain the information of the messages and 
+        categories.
     Outputs:
-        pandas Dataframe       
+        df: Pandas DataFrame that contains the merged infomation of messages
+        and categoires
     '''
-    messages = pd.read_csv(messages_filepath)
-    categories = pd.read_csv(categories_filepath)
-    return messages,categories
+    # Load the data
+    categories = pd.read_csv(categories_path)
+    messages = pd.read_csv(messages_path)
+
+    # Merge the data
+    df = messages.merge(categories,'inner',on='id')
+
+    # Create dataframe for the 36 individual category columns
+    categories = df['categories'].str.split(';',expand=True)
+
+    # Create names for the categories
+    raw = categories.loc[0,:]
+    category_names = raw.str.slice(stop=-2)
+
+    # Changing the names:
+    categories.columns = category_names
+
+    # Giving correct values to the category columns
+    for column in categories:
+        categories[column] = categories[column].astype(str).str.\
+                                slice(start=-1).astype(int)
+
+    # Join and replace the categories dataframe in the main dataframe
+    df.drop(columns='categories',inplace=True) # eliminate bad column
+    df = pd.concat([df,categories],axis=1,sort=False)
+
+    return df
 
 
 def clean_data(df):
@@ -46,8 +70,8 @@ def save_data(df, database_filename='message_data'):
     Outputs:
         None
     '''
-    engine = create_engine('sqlite:///{}.db'/forma(database_filename)) 
-    df.to_sql(database_filename,engine,index=False)
+    engine = create_engine('sqlite:///{}'.format(database_filename)) 
+    df.to_sql('DisasterResponse',engine,index=False)
 
 
 def main():
