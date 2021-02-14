@@ -18,7 +18,30 @@ In this project you will find two parts:
 
 1. Application: in the application section of the project, there is a web application that uses the analyzed information to make graphs and predictions. This predictions are done with a [Random Forest](https://en.wikipedia.org/wiki/Random_forest#:~:text=Random%20forests%20or%20random%20decision,average%20prediction%20(regression)%20of%20the) model, that is trained on the information given by Udacity. The templates for the web app where provided by Udacity. 
 
-2. Notebook: in the notebook you can find also the Random Forest model, and the preprocessing and graphs. It also contains an improved model, which was done using Grid Search to choose between [XGBoost](https://xgboost.readthedocs.io/en/latest/) and the Scikit-Learn Random Forest algorithm. **It also contains a Recurrent Neural Network, which has its own preprocessing process**. The results are shown in the corpus of the notebook. 
+2. Notebook: in the notebook you can find also the Random Forest model, and the preprocessing and graphs. It also contains an improved model, which was done using Grid Search to choose between [XGBoost](https://xgboost.readthedocs.io/en/latest/) and the Scikit-Learn Random Forest algorithm. **It also contains a Recurrent Neural Network, which has its own preprocessing process**. The results are shown in the corpus of the notebook.
+
+## How to use the app
+
+To use the app you should first download the files of the app into a directory. There are three main folders:
++ data: containing the data used for the project and the preprocessing file "process_data.py"
++ models: where the model stript is located
++ app: where the templates and the script for the app is located
+
+Once you have this, you should run the following code in a terminal on the root directory to set up the database and the model:
+`python data/process_data.py data/disaster_messages.csv data/disaster_categories.csv data/DisasterResponse.db`
+
+`python models/train_classifier.py data/DisasterResponse.db models/classifier.pkl`
+
+Then change directory to the app folder:
+
+`cd app`
+
+and run 
+
+`python run.py`
+
+Finally go to http://0.0.0.0:3001/
+
 
 ## Tools and Software Used
 + [Pandas](https://pandas.pydata.org): v.1.1.3
