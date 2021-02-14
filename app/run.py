@@ -43,6 +43,25 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
     
+    # Plot 2:
+    word_dic = {}
+    all_messages = []
+    stopwords = nltk.corpus.stopwords.words('english')
+    messages = df['message'].to_list()
+    for message in messages:
+        sentence = re.sub(r"[^a-zA-Z']+", " ", message).strip().lower().split()
+        sentence = [word for word in sentence if word not in stopwords ]
+        for word in sentence:
+            all_messages.append(word)
+            if word not in word_dic.keys():
+                word_dic[word] = 1
+            else:
+                word_dic[word] += 1
+    words = pd.Series(word_dic)
+    top_10 = words.sort_values(ascending=False).head(10)
+    top_words = top_10.index
+    count_top_words = top_10.values
+    
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
@@ -61,6 +80,24 @@ def index():
                 },
                 'xaxis': {
                     'title': "Genre"
+                }
+            }
+        },
+        {
+            'data': [
+                Bar(
+                    x=top_words,
+                    y=count_top_words
+                )
+            ],
+
+            'layout': {
+                'title': 'Distribution of top 10 most frequent words',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Words"
                 }
             }
         }
