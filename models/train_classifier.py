@@ -10,25 +10,25 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from sklearn.pipeline import Pipeline
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.ensemble import RandomForestClassifier
-import xgboost
-import pickle
+#import xgboost
+from sklearn.externals import joblib
 from sklearn.base import BaseEstimator
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import precision_score, recall_score, f1_score, classification_report
 
-def load_data():
+def load_data(filepath):
     '''Load the data
     Inputs:
-        None
+        filepath: string with the path of the file
     Outputs:
         X, Y: Pandas dataframes containing the predictive variables and the
         objective variable correspondingly
         category_names: list with names of the objective variables (Ys)
     '''
-    engine = create_engine('sqlite:///message_data.db')
-    df = pd.read_sql_table('message_data',engine)
-    Y = df.loc[:,'relate':'direct_repot']
+    engine = create_engine('sqlite:///{}'.format(filepath))
+    df = pd.read_sql_table('DisasterResponse',engine)
+    Y = df.loc[:,'related':'direct_report']
     Y['related'] = Y['related'].apply(lambda x: 1 if x>0 else 0)
     category_names = Y.columns
     X = df['message']
@@ -67,7 +67,7 @@ class MultiModel(BaseEstimator):
         return self
     
     def predict(self, x_test):
-        return self.estimator.predict(x_train)
+        return self.estimator.predict(x_test)
 
 
 def build_model():
@@ -78,22 +78,22 @@ def build_model():
     pipeline = Pipeline([
         ('vect',CountVectorizer(tokenizer=tokenize)),
         ('tfidf',TfidfTransformer()),
-        ('clf',MultiOutputClassifier(MultiModel()))
+        ('clf',MultiOutputClassifier(RandomForestClassifier()))
     ])
 
     # Set different list of parameters to test in the grid search cross-validation
     parameters = [
-    {'clf__estimator':[xgboost.XGBClassifier()],'vect__max_df': (0.5, 0.75, 1.0)},
-    {'clf__estimator':[RandomForestClassifier()],'tfidf__use_idf': (True, False),
+    #{'clf__estimator':[xgboost.XGBClassifier()],'vect__max_df': (0.5, 0.75, 1.0)},
+    {'tfidf__use_idf': (True, False),
     'vect__max_df': (0.5, 0.75, 1.0)}
     ]
 
     # Test the different combinations of hyperparameters and return best estimator
-    cv = GridSearchCV(pipeline,param_grid=parameters,verbose=2)
-    cv.fit(X_train,Y_train)
-    return cv.best_estimator_
+    cv = GridSearchCV(pipeline,param_grid=parameters,verbose=1)
+    return cv
 
-def evaluate_model(model,x,y,category_names):
+
+def evaluate_model(model,x_test,y_test,category_names):
     '''This function evaluates the model in the X and Y datasets. It prints
     a summary of the tests for all the categories in the objective dataset Y
 
@@ -105,15 +105,15 @@ def evaluate_model(model,x,y,category_names):
     Outputs:
         None
     '''
-    y_pred = model.predict(x)
-    for index,column in enumerate(y):
+    y_pred = model.predict(x_test)
+    for index,column in enumerate(category_names):
         temp_dict = classification_report(y_test[column],y_pred[:,index])
         print('------------------------'+column.upper()+'-----------------------'+'\n')
         print(temp_dict)
 
 def save_model(model,model_filepath):
     '''This function saves the model in a Pickle file'''
-    pickle.dump(model,open(model_filepath,'wb'))
+    joblib.dump(model,model_filepath)
 
 def main():
     if len(sys.argv) == 3:
