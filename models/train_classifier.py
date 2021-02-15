@@ -29,7 +29,6 @@ def load_data(filepath):
     engine = create_engine('sqlite:///{}'.format(filepath))
     df = pd.read_sql_table('DisasterResponse',engine)
     Y = df.loc[:,'related':'direct_report']
-    Y['related'] = Y['related'].apply(lambda x: 1 if x>0 else 0)
     category_names = Y.columns
     X = df['message']
     return X,Y,category_names
@@ -106,10 +105,9 @@ def evaluate_model(model,x_test,y_test,category_names):
         None
     '''
     y_pred = model.predict(x_test)
-    for index,column in enumerate(category_names):
-        temp_dict = classification_report(y_test[column],y_pred[:,index])
-        print('------------------------'+column.upper()+'-----------------------'+'\n')
-        print(temp_dict)
+    print(classification_report(y_test,y_pred,zero_division=0,target_names=\
+                                category_names)
+                                
 
 def save_model(model,model_filepath):
     '''This function saves the model in a Pickle file'''
