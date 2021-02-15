@@ -106,7 +106,7 @@ def evaluate_model(model,x_test,y_test,category_names):
     '''
     y_pred = model.predict(x_test)
     print(classification_report(y_test,y_pred,zero_division=0,target_names=\
-                                category_names)
+                                category_names))
                                 
 
 def save_model(model,model_filepath):
