@@ -2,10 +2,6 @@ import json
 import plotly
 import pandas as pd
 
-import json
-import plotly
-import pandas as pd
-
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
@@ -15,6 +11,7 @@ from plotly.graph_objs import Bar
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
+import re
 import nltk
 nltk.download(['punkt','wordnet'])
 
