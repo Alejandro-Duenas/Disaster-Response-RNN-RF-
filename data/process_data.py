@@ -58,6 +58,9 @@ def clean_data(df):
     '''
     # Remove duplicates
     df.drop_duplicates(subset='message',keep='first',inplace=True)
+    
+    # Set to binary values only
+    df['related'] = df['related'].apply(lambda x: 1 if x>0 else 0)
     return df
 
 
@@ -71,7 +74,7 @@ def save_data(df, database_filename='message_data'):
         None
     '''
     engine = create_engine('sqlite:///{}'.format(database_filename)) 
-    df.to_sql('DisasterResponse',engine,index=False)
+    df.to_sql('DisasterResponse',engine,index=False,if_exists='replace')
 
 
 def main():
